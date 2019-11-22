@@ -119,6 +119,7 @@ begin
   port map (
     clk           => ci_clk,
     checked_sw    => ci_checked_sw,
+    rom_data      => rom_data,
     data_u        => data_u,
     data_r        => data_r,
     data_d        => data_d,
@@ -126,6 +127,7 @@ begin
     i2c_busy      => APDS_master_busy,
     i2c_init_done => APDS_master_init_done,
     i2c_ack_error => APDS_master_ack_error,
+    rom_addr      => rom_addr,
     i2c_reset_n   => APDS_master_reset_n,
     i2c_init      => APDS_master_init,
     i2c_ena       => APDS_master_ena,
