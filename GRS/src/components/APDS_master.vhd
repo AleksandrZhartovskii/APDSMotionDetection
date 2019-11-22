@@ -16,7 +16,7 @@ entity APDS_master is
     i2c_data_rd   : in std_logic_vector(7 downto 0);
     i2c_ack_error : in std_logic;
 
-    rom_addr      : out std_logic_vector(1 downto 0);
+    rom_addr      : out std_logic_vector(5 downto 0);
 
     i2c_reset_n   : out std_logic;
     i2c_ena       : out std_logic;

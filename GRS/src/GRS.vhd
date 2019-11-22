@@ -16,7 +16,7 @@ entity GRS is
   signal ci_clk                 : std_logic;
   signal ci_checked_sw          : std_logic_vector(2 downto 0);
 
-  signal rom_addr               : std_logic_vector(1 downto 0);
+  signal rom_addr               : std_logic_vector(5 downto 0);
   signal rom_data               : std_logic_vector(7 downto 0);
 
   signal i2c_reset_n            : std_logic;

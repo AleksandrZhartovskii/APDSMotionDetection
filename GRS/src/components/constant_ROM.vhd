@@ -5,7 +5,7 @@ entity constant_ROM is
 
    port (
       clk  : in  std_logic;
-      addr : in  std_logic_vector(1 downto 0);
+      addr : in  std_logic_vector(5 downto 0);
 
       data : out std_logic_vector(7 downto 0)
    );
