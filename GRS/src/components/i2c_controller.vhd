@@ -10,21 +10,21 @@ entity i2c_controller is
   );
 
   port (
-    clk       : in std_logic;                            --system clock
+    clk       : in     std_logic;                        --system clock
 
-    reset_n   : in std_logic;                            --active low reset
-    ena       : in std_logic;                            --latch in command
-    addr      : in std_logic_vector(6 downto 0);         --address of target slave
-    rw        : in std_logic;                            --'0' is write, '1' is read
-    data_wr   : in std_logic_vector(7 downto 0);         --data to write to slave
+    reset_n   : in     std_logic;                        --active low reset
+    ena       : in     std_logic;                        --latch in command
+    addr      : in     std_logic_vector(6 downto 0);     --address of target slave
+    rw        : in     std_logic;                        --'0' is write, '1' is read
+    data_wr   : in     std_logic_vector(7 downto 0);     --data to write to slave
 
-    busy      : out std_logic;                           --indicates transaction in progress
-    data_rd   : out std_logic_vector(7 downto 0);        --data read from slave
+    busy      : out    std_logic;                        --indicates transaction in progress
+    data_rd   : out    std_logic_vector(7 downto 0);     --data read from slave
 
     ack_error : buffer std_logic;                        --flag if improper acknowledge from slave
 
-    sda       : inout std_logic;                         --serial data output of i2c bus
-    scl       : inout std_logic                          --serial clock output of i2c bus
+    sda       : inout  std_logic;                        --serial data output of i2c bus
+    scl       : inout  std_logic                         --serial clock output of i2c bus
   );
 
 end i2c_controller;
@@ -67,14 +67,14 @@ begin
       end if;
 
       case count is
-        when 0 to divider-1 =>            --first 1/4 cycle of clocking
+        when 0 to divider-1 =>             --first 1/4 cycle of clocking
           scl_clk <= '0';
           data_clk <= '0';
-        when divider to divider*2-1 =>    --second 1/4 cycle of clocking
+        when divider to divider*2-1 =>     --second 1/4 cycle of clocking
           scl_clk <= '0';
           data_clk <= '1';
-        when divider*2 to divider*3-1 =>  --third 1/4 cycle of clocking
-          scl_clk <= '1';                 --release scl
+        when divider*2 to divider*3-1 =>   --third 1/4 cycle of clocking
+          scl_clk <= '1';                  --release scl
 
           if (scl = '0') then              --detect if slave is stretching clock
             stretch <= '1';
@@ -83,7 +83,7 @@ begin
           end if;
 
           data_clk <= '1';
-        when others =>                    --last 1/4 cycle of clocking
+        when others =>                     --last 1/4 cycle of clocking
           scl_clk <= '1';
           data_clk <= '0';
       end case;
@@ -93,7 +93,7 @@ begin
   --state machine and writing to sda during scl low (data_clk rising edge)
   process (clk, reset_n)
   begin
-    if (reset_n = '0') then                 --reset asserted
+    if (reset_n = '0') then                --reset asserted
       state <= ready;                      --return to initial state
       busy <= '1';                         --indicate not available
       scl_ena <= '0';                      --sets scl high impedance

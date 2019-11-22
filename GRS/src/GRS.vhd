@@ -31,12 +31,12 @@ entity GRS is
   signal i2c_busy               : std_logic;
   signal i2c_ack_error          : std_logic;
 
-  signal APDS_master_reset_n    : std_logic;
-  signal APDS_master_init       : std_logic;
-  signal APDS_master_ena        : std_logic;
-  signal APDS_master_busy       : std_logic;
-  signal APDS_master_init_done  : std_logic;
-  signal APDS_master_ack_error  : std_logic;
+  signal apds_master_reset_n    : std_logic;
+  signal apds_master_init       : std_logic;
+  signal apds_master_ena        : std_logic;
+  signal apds_master_busy       : std_logic;
+  signal apds_master_init_done  : std_logic;
+  signal apds_master_ack_error  : std_logic;
 
   signal data_u                 : std_logic_vector(7 downto 0);
   signal data_r                 : std_logic_vector(7 downto 0);
@@ -71,7 +71,7 @@ begin
     seg_data  => seg_data
   );
 
-  constant_ROM_inst : entity work.constant_ROM
+  constant_rom_inst : entity work.constant_rom
   port map (
     clk  => ci_clk,
     addr => rom_addr,
@@ -93,12 +93,12 @@ begin
     scl       => scl
   );
 
-  APDS_master_inst : entity work.APDS_master
+  apds_master_inst : entity work.apds_master
   port map (
     clk           => ci_clk,
-    reset_n       => APDS_master_reset_n,
-    init          => APDS_master_init,
-    ena           => APDS_master_ena,
+    reset_n       => apds_master_reset_n,
+    init          => apds_master_init,
+    ena           => apds_master_ena,
     rom_data      => rom_data,
     i2c_busy      => i2c_busy,
     i2c_data_rd   => i2c_data_rd,
@@ -113,9 +113,9 @@ begin
     data_r        => data_r,
     data_d        => data_d,
     data_l        => data_l,
-    busy          => APDS_master_busy,
-    init_done     => APDS_master_init_done,
-    ack_error     => APDS_master_ack_error
+    busy          => apds_master_busy,
+    init_done     => apds_master_init_done,
+    ack_error     => apds_master_ack_error
   );
 
   main_block_inst : entity work.main_block
@@ -127,13 +127,13 @@ begin
     data_r        => data_r,
     data_d        => data_d,
     data_l        => data_l,
-    i2c_busy      => APDS_master_busy,
-    i2c_init_done => APDS_master_init_done,
-    i2c_ack_error => APDS_master_ack_error,
+    i2c_busy      => apds_master_busy,
+    i2c_init_done => apds_master_init_done,
+    i2c_ack_error => apds_master_ack_error,
     rom_addr      => rom_addr,
-    i2c_reset_n   => APDS_master_reset_n,
-    i2c_init      => APDS_master_init,
-    i2c_ena       => APDS_master_ena,
+    i2c_reset_n   => apds_master_reset_n,
+    i2c_init      => apds_master_init,
+    i2c_ena       => apds_master_ena,
     gest_dt       => gest_dt
   );
 

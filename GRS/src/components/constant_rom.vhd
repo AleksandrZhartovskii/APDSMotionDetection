@@ -1,7 +1,7 @@
 library ieee;
 use ieee.std_logic_1164.all;
 
-entity constant_ROM is
+entity constant_rom is
 
    port (
       clk  : in  std_logic;
@@ -10,9 +10,9 @@ entity constant_ROM is
       data : out std_logic_vector(7 downto 0)
    );
 
-end entity constant_ROM;
+end entity constant_rom;
 
-architecture rtl of constant_ROM is
+architecture rtl of constant_rom is
 begin
 
 
