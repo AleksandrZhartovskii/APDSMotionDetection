@@ -4,13 +4,13 @@ use ieee.std_logic_1164.all;
 entity GRS is
 
   port (
-    clk            : in    std_logic;
-    checked_sw     : in    std_logic_vector(2 downto 0);
+    clk         : in    std_logic;
+    checked_sw  : in    std_logic_vector(2 downto 0);
 
-    sda            : inout std_logic;
-    scl            : inout std_logic;
+    sda         : inout std_logic;
+    scl         : inout std_logic;
 
-    indicator_code : out   std_logic_vector(6 downto 0)
+    seg_data    : out   std_logic_vector(6 downto 0)
   );
 
   signal ci_clk                 : std_logic;
@@ -18,6 +18,8 @@ entity GRS is
 
   signal rom_addr               : std_logic_vector(5 downto 0);
   signal rom_data               : std_logic_vector(7 downto 0);
+
+  signal indicator_reset_n      : std_logic;
 
   signal i2c_reset_n            : std_logic;
   signal i2c_ena                : std_logic;
@@ -41,7 +43,7 @@ entity GRS is
   signal data_d                 : std_logic_vector(7 downto 0);
   signal data_l                 : std_logic_vector(7 downto 0);
 
-  signal gesture_bcd            : std_logic_vector(3 downto 0);
+  signal gest_dt                : std_logic_vector(3 downto 0);
 
 end entity GRS;
 
@@ -63,9 +65,10 @@ begin
 
   indicator_controller_inst : entity work.indicator_controller
   port map (
-    clk  => ci_clk,
-    bcd  => gesture_bcd,
-    code => indicator_code
+    clk       => ci_clk,
+    reset_n   => indicator_reset_n,
+    digit     => gest_dt,
+    seg_data  => seg_data
   );
 
   constant_ROM_inst : entity work.constant_ROM
@@ -131,7 +134,7 @@ begin
     i2c_reset_n   => APDS_master_reset_n,
     i2c_init      => APDS_master_init,
     i2c_ena       => APDS_master_ena,
-    gesture_bcd   => gesture_bcd
+    gest_dt       => gest_dt
   );
 
 end architecture rtl;

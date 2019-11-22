@@ -24,7 +24,7 @@ entity main_block is
     i2c_init      : out std_logic;
     i2c_ena       : out std_logic;
 
-    gesture_bcd   : out std_logic_vector(3 downto 0)
+    gest_dt       : out std_logic_vector(3 downto 0)
   );
 
 end entity main_block;
