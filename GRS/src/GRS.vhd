@@ -3,100 +3,133 @@ use ieee.std_logic_1164.all;
 
 entity GRS is
 
-   port (
-      clk            : in    std_logic;
-      checked_sw     : in    std_logic_vector(2 downto 0);
+  port (
+    clk            : in    std_logic;
+    checked_sw     : in    std_logic_vector(2 downto 0);
 
-      SCL            : inout std_logic;
-      SDA            : inout std_logic;
+    sda            : inout std_logic;
+    scl            : inout std_logic;
 
-      indicator_code : out   std_logic_vector(6 downto 0)
-   );
+    indicator_code : out   std_logic_vector(6 downto 0)
+  );
 
-   signal so_frequency_controller        : std_logic;
-   signal so_switches_controller         : std_logic_vector(2 downto 0);
-   signal so_constant_ROM                : std_logic_vector(7 downto 0);
-    
-   signal so_APDS_master_sensor_start    : std_logic;
-   signal so_APDS_master_sensor_read     : std_logic;
-   signal so_APDS_master_sensor_addr     : std_logic_vector(2 downto 0);
-   signal so_APDS_master_constant_addr   : std_logic_vector(1 downto 0);
-   signal so_APDS_master_data            : std_logic_vector(7 downto 0);
-    
-   signal so_i2c_controller_cmd_ready    : std_logic;
-   signal so_i2c_controller_cmd_received : std_logic;
-   signal so_i2c_controller_data         : std_logic_vector(7 downto 0);
-    
-   signal so_main_block_sensor_read      : std_logic;
-   signal so_main_block_gesture_bcd      : std_logic_vector(3 downto 0);
+  signal ci_clk                 : std_logic;
+  signal ci_checked_sw          : std_logic_vector(2 downto 0);
+
+  signal rom_addr               : std_logic_vector(1 downto 0);
+  signal rom_data               : std_logic_vector(7 downto 0);
+
+  signal i2c_reset_n            : std_logic;
+  signal i2c_ena                : std_logic;
+  signal i2c_addr               : std_logic_vector(6 downto 0);
+  signal i2c_rw                 : std_logic;
+  signal i2c_data_wr            : std_logic_vector(7 downto 0);
+
+  signal i2c_data_rd            : std_logic_vector(7 downto 0);
+  signal i2c_busy               : std_logic;
+  signal i2c_ack_error          : std_logic;
+
+  signal APDS_master_reset_n    : std_logic;
+  signal APDS_master_init       : std_logic;
+  signal APDS_master_ena        : std_logic;
+  signal APDS_master_busy       : std_logic;
+  signal APDS_master_init_done  : std_logic;
+  signal APDS_master_ack_error  : std_logic;
+
+  signal data_u                 : std_logic_vector(7 downto 0);
+  signal data_r                 : std_logic_vector(7 downto 0);
+  signal data_d                 : std_logic_vector(7 downto 0);
+  signal data_l                 : std_logic_vector(7 downto 0);
+
+  signal gesture_bcd            : std_logic_vector(3 downto 0);
 
 end entity GRS;
 
 architecture rtl of GRS is
 begin
 
-   frequency_controller_instance : entity work.frequency_controller
-   port map (
-      clk_in  => clk,
-      clk_out => so_frequency_controller
-   );
+  frequency_controller_inst : entity work.frequency_controller
+  port map (
+    clk_in  => clk,
+    clk_out => ci_clk
+  );
 
-   switches_controller_instance : entity work.switches_controller
-   port map (
-      clk            => so_frequency_controller,
-      checked_sw_in  => checked_sw,
-      checked_sw_out => so_switches_controller
-   );
-    
-    indicator_controller_instance : entity work.indicator_controller
-   port map (
-      clk  => so_frequency_controller,
-      bcd  => so_main_block_gesture_bcd,
-      code => indicator_code
-   );
+  switches_controller_inst : entity work.switches_controller
+  port map (
+    clk            => ci_clk,
+    checked_sw_in  => checked_sw,
+    checked_sw_out => ci_checked_sw
+  );
 
-   constant_ROM_instance : entity work.constant_ROM
-   port map (
-      clk  => so_frequency_controller,
-      addr => so_APDS_master_constant_addr,
-      data => so_constant_ROM
-   );
+  indicator_controller_inst : entity work.indicator_controller
+  port map (
+    clk  => ci_clk,
+    bcd  => gesture_bcd,
+    code => indicator_code
+  );
 
-   i2c_controller_instance : entity work.i2c_controller
-   port map (
-      clk          => so_frequency_controller,
-      cmd_start    => so_APDS_master_sensor_start,
-      cmd_read     => so_APDS_master_sensor_read,
-      addr         => so_APDS_master_sensor_addr,
-      SCL          => SCL,
-      SDA          => SDA,
-      cmd_ready    => so_i2c_controller_cmd_ready,
-      cmd_received => so_i2c_controller_cmd_received,
-      data         => so_i2c_controller_data
-   );
-    
-   APDS_master_instance : entity work.APDS_master
-   port map (
-      clk             => so_frequency_controller,
-      cmd_read        => so_main_block_sensor_read,
-      sensor_ready    => so_i2c_controller_cmd_ready,
-      sensor_received => so_i2c_controller_cmd_received,
-      raw_data        => so_i2c_controller_data,
-      constant_data   => so_constant_ROM,
-      sensor_start    => so_APDS_master_sensor_start,
-      sensor_read     => so_APDS_master_sensor_read,
-      sensor_addr     => so_APDS_master_sensor_addr,
-      constant_addr   => so_APDS_master_constant_addr,
-      data            => so_APDS_master_data
-   );
+  constant_ROM_inst : entity work.constant_ROM
+  port map (
+    clk  => ci_clk,
+    addr => rom_addr,
+    data => rom_data
+  );
 
-   main_block_instance : entity work.main_block
-   port map (
-      clk         => so_frequency_controller,
-      checked_sw  => so_switches_controller,
-      sensor_data => so_APDS_master_data,
-      sensor_read => so_main_block_sensor_read,
-      gesture_bcd => so_main_block_gesture_bcd
-   );
+  i2c_controller_inst : entity work.i2c_controller
+  port map (
+    clk       => clk,
+    reset_n   => i2c_reset_n,
+    ena       => i2c_ena,
+    addr      => i2c_addr,
+    rw        => i2c_rw,
+    data_wr   => i2c_data_wr,
+    busy      => i2c_busy,
+    data_rd   => i2c_data_rd,
+    ack_error => i2c_ack_error,
+    sda       => sda,
+    scl       => scl
+  );
+
+  APDS_master_inst : entity work.APDS_master
+  port map (
+    clk           => ci_clk,
+    reset_n       => APDS_master_reset_n,
+    init          => APDS_master_init,
+    ena           => APDS_master_ena,
+    rom_data      => rom_data,
+    i2c_busy      => i2c_busy,
+    i2c_data_rd   => i2c_data_rd,
+    i2c_ack_error => i2c_ack_error,
+    rom_addr      => rom_addr,
+    i2c_reset_n   => i2c_reset_n,
+    i2c_ena       => i2c_ena,
+    i2c_rw        => i2c_rw,
+    i2c_addr      => i2c_addr,
+    i2c_data_wr   => i2c_data_wr,
+    data_u        => data_u,
+    data_r        => data_r,
+    data_d        => data_d,
+    data_l        => data_l,
+    busy          => APDS_master_busy,
+    init_done     => APDS_master_init_done,
+    ack_error     => APDS_master_ack_error
+  );
+
+  main_block_inst : entity work.main_block
+  port map (
+    clk           => ci_clk,
+    checked_sw    => ci_checked_sw,
+    data_u        => data_u,
+    data_r        => data_r,
+    data_d        => data_d,
+    data_l        => data_l,
+    i2c_busy      => APDS_master_busy,
+    i2c_init_done => APDS_master_init_done,
+    i2c_ack_error => APDS_master_ack_error,
+    i2c_reset_n   => APDS_master_reset_n,
+    i2c_init      => APDS_master_init,
+    i2c_ena       => APDS_master_ena,
+    gesture_bcd   => gesture_bcd
+  );
 
 end architecture rtl;

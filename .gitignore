@@ -36,8 +36,18 @@ timing
 *.sopc_builder
 *.summary
 *.tcl
-*.txt # Explicitly add any text files used
+
 *~
 *example*
 *sopc_*
-PLLJ_PLLSPE_INFO.txt # The generated PLL specification file
+
+# Explicitly add any text files used
+*.txt
+
+# The generated PLL specification file
+PLLJ_PLLSPE_INFO.txt
+
+# ignore Sigasi Studio files
+.settings
+.project
+*.xml
