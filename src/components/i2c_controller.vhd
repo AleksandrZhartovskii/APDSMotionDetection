@@ -27,7 +27,7 @@ entity i2c_controller is
     scl       : inout  std_logic                         --serial clock output of i2c bus
   );
 
-end i2c_controller;
+end entity i2c_controller;
 
 architecture rtl of i2c_controller is
 
@@ -57,7 +57,7 @@ begin
     if (reset_n = '0') then                --reset asserted
       stretch <= '0';
       count := 0;
-    elsif (clk'event and clk = '1') then
+    elsif rising_edge(clk) then
       data_clk_prev <= data_clk;           --store previous value of data clock
 
       if (count = divider*4-1) then        --end of timing cycle
@@ -101,7 +101,7 @@ begin
       ack_error <= '0';                    --clear acknowledge error flag
       bit_cnt <= 7;                        --restarts data bit counter
       data_rd <= "00000000";               --clear data read port
-    elsif (clk'event and clk = '1') then
+    elsif rising_edge(clk) then
       if (data_clk = '1' and data_clk_prev = '0') then  --data clock rising edge
         case state is
           when ready =>                      --idle state
@@ -151,7 +151,7 @@ begin
           when rd =>                         --read byte of transaction
             busy <= '1';                     --resume busy if continuous mode
 
-            if (bit_cnt = 0) then             --read byte receive finished
+            if (bit_cnt = 0) then            --read byte receive finished
               if (ena = '1' and addr_rw = addr & rw) then  --continuing with another read at same address
                 sda_int <= '0';              --acknowledge the byte has been received
               else                           --stopping or continuing with a write
@@ -228,11 +228,11 @@ begin
   --set sda output
   with state select
     sda_ena_n <= data_clk_prev when start,     --generate start condition
-                 not data_clk_prev when stop,  --generate stop condition
+                 not(data_clk_prev) when stop, --generate stop condition
                  sda_int when others;          --set to internal sda signal
 
   --set scl and sda outputs
   scl <= '0' when (scl_ena = '1' and scl_clk = '0') else 'Z';
   sda <= '0' when sda_ena_n = '0' else 'Z';
 
-end rtl;
+end architecture rtl;

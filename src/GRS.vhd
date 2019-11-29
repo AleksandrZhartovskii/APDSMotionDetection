@@ -32,16 +32,18 @@ entity GRS is
   signal i2c_ack_error          : std_logic;
 
   signal apds_master_reset_n    : std_logic;
-  signal apds_master_init       : std_logic;
   signal apds_master_ena        : std_logic;
+  signal apds_master_op         : std_logic;
   signal apds_master_busy       : std_logic;
-  signal apds_master_init_done  : std_logic;
   signal apds_master_ack_error  : std_logic;
 
   signal data_u                 : std_logic_vector(7 downto 0);
   signal data_r                 : std_logic_vector(7 downto 0);
   signal data_d                 : std_logic_vector(7 downto 0);
   signal data_l                 : std_logic_vector(7 downto 0);
+  
+  signal gvalid                 : std_logic;
+  signal gflvl                  : std_logic_vector(7 downto 0);
 
   signal gest_dt                : std_logic_vector(3 downto 0);
 
@@ -97,8 +99,8 @@ begin
   port map (
     clk           => ci_clk,
     reset_n       => apds_master_reset_n,
-    init          => apds_master_init,
     ena           => apds_master_ena,
+    op            => apds_master_op,
     rom_data      => rom_data,
     i2c_busy      => i2c_busy,
     i2c_data_rd   => i2c_data_rd,
@@ -113,8 +115,9 @@ begin
     data_r        => data_r,
     data_d        => data_d,
     data_l        => data_l,
+    gvalid        => gvalid,
+    gflvl         => gflvl,
     busy          => apds_master_busy,
-    init_done     => apds_master_init_done,
     ack_error     => apds_master_ack_error
   );
 
@@ -122,18 +125,17 @@ begin
   port map (
     clk           => ci_clk,
     checked_sw    => ci_checked_sw,
-    rom_data      => rom_data,
     data_u        => data_u,
     data_r        => data_r,
     data_d        => data_d,
     data_l        => data_l,
-    i2c_busy      => apds_master_busy,
-    i2c_init_done => apds_master_init_done,
-    i2c_ack_error => apds_master_ack_error,
-    rom_addr      => rom_addr,
-    i2c_reset_n   => apds_master_reset_n,
-    i2c_init      => apds_master_init,
-    i2c_ena       => apds_master_ena,
+    gvalid        => gvalid,
+    gflvl         => gflvl,
+    m_busy        => apds_master_busy,
+    m_ack_error   => apds_master_ack_error,
+    m_reset_n     => apds_master_reset_n,
+    m_ena         => apds_master_ena,
+    m_op          => apds_master_op,
     gest_dt       => gest_dt
   );
 
