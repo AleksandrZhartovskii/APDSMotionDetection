@@ -10,7 +10,7 @@ entity GRS is
     sda         : inout std_logic;
     scl         : inout std_logic;
 
-    seg_data    : out   std_logic_vector(6 downto 0)
+    seg_data    : out   std_logic_vector(0 to 6)
   );
 
   signal ci_clk                 : std_logic;

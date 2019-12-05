@@ -12,6 +12,9 @@ simulation
 testbench
 timing
 
+# ignore compilation and other output files
+output_files
+
 # ignore Quartus II generated files
 *_generation_script*
 *_inst.vhd
