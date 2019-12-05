@@ -62,27 +62,29 @@ begin
 
   process (clk)
   begin
-    case addr is
-      when RA_APDS9960_EN           => data <= V_APDS9960_EN;
-      when RA_APDS9960_WTIME        => data <= V_APDS9960_WTIME;
-      when RA_APDS9960_PPULSE       => data <= V_APDS9960_PPULSE;
-      when RA_APDS9960_CONTROL      => data <= V_APDS9960_CONTROL;
-      when RA_APDS9960_CONFIG1      => data <= V_APDS9960_CONFIG1;
-      when RA_APDS9960_CONFIG2      => data <= V_APDS9960_CONFIG2;
-      when RA_APDS9960_CONFIG3      => data <= V_APDS9960_CONFIG3;
-      when RA_APDS9960_GPENTH       => data <= V_APDS9960_GPENTH;
-      when RA_APDS9960_GEXTH        => data <= V_APDS9960_GEXTH;
-      when RA_APDS9960_GOFFSET_U    => data <= V_APDS9960_GOFFSET_U;
-      when RA_APDS9960_GOFFSET_D    => data <= V_APDS9960_GOFFSET_D;
-      when RA_APDS9960_GOFFSET_L    => data <= V_APDS9960_GOFFSET_L;
-      when RA_APDS9960_GOFFSET_R    => data <= V_APDS9960_GOFFSET_R;
-      when RA_APDS9960_GPULSE       => data <= V_APDS9960_GPULSE;
-      when RA_APDS9960_GCONFIG1     => data <= V_APDS9960_GCONFIG1;
-      when RA_APDS9960_GCONFIG2     => data <= V_APDS9960_GCONFIG2;
-      when RA_APDS9960_GCONFIG3     => data <= V_APDS9960_GCONFIG3;
-      when RA_APDS9960_GCONFIG4     => data <= V_APDS9960_GCONFIG4;
-      when others                   => null;
-    end case;
+    if rising_edge(clk) then
+      case addr is
+        when RA_APDS9960_EN           => data <= V_APDS9960_EN;
+        when RA_APDS9960_WTIME        => data <= V_APDS9960_WTIME;
+        when RA_APDS9960_PPULSE       => data <= V_APDS9960_PPULSE;
+        when RA_APDS9960_CONTROL      => data <= V_APDS9960_CONTROL;
+        when RA_APDS9960_CONFIG1      => data <= V_APDS9960_CONFIG1;
+        when RA_APDS9960_CONFIG2      => data <= V_APDS9960_CONFIG2;
+        when RA_APDS9960_CONFIG3      => data <= V_APDS9960_CONFIG3;
+        when RA_APDS9960_GPENTH       => data <= V_APDS9960_GPENTH;
+        when RA_APDS9960_GEXTH        => data <= V_APDS9960_GEXTH;
+        when RA_APDS9960_GOFFSET_U    => data <= V_APDS9960_GOFFSET_U;
+        when RA_APDS9960_GOFFSET_D    => data <= V_APDS9960_GOFFSET_D;
+        when RA_APDS9960_GOFFSET_L    => data <= V_APDS9960_GOFFSET_L;
+        when RA_APDS9960_GOFFSET_R    => data <= V_APDS9960_GOFFSET_R;
+        when RA_APDS9960_GPULSE       => data <= V_APDS9960_GPULSE;
+        when RA_APDS9960_GCONFIG1     => data <= V_APDS9960_GCONFIG1;
+        when RA_APDS9960_GCONFIG2     => data <= V_APDS9960_GCONFIG2;
+        when RA_APDS9960_GCONFIG3     => data <= V_APDS9960_GCONFIG3;
+        when RA_APDS9960_GCONFIG4     => data <= V_APDS9960_GCONFIG4;
+        when others                   => null;
+      end case;
+    end if;
   end process;
 
 end architecture rtl;

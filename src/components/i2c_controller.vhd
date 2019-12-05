@@ -45,14 +45,14 @@ architecture rtl of i2c_controller is
   signal addr_rw       : std_logic_vector(7 downto 0);   --latched in address and read/write
   signal data_tx       : std_logic_vector(7 downto 0);   --latched in data to write to slave
   signal data_rx       : std_logic_vector(7 downto 0);   --data received from slave
-  signal bit_cnt       : integer range 0 TO 7 := 7;      --tracks bit number in transaction
+  signal bit_cnt       : natural range 0 to 7 := 7;      --tracks bit number in transaction
   signal stretch       : std_logic := '0';               --identifies if slave is stretching scl
 
 begin
 
   --generate the timing for the bus clock (scl_clk) and the data clock (data_clk)
   process (clk, reset_n)
-    variable count  :  integer range 0 to divider*4;  --timing for clock generation
+    variable count : integer range 0 to divider*4;  --timing for clock generation
   begin
     if (reset_n = '0') then                --reset asserted
       stretch <= '0';
@@ -102,7 +102,7 @@ begin
       bit_cnt <= 7;                        --restarts data bit counter
       data_rd <= "00000000";               --clear data read port
     elsif rising_edge(clk) then
-      if (data_clk = '1' and data_clk_prev = '0') then  --data clock rising edge
+      if ((data_clk = '1') and (data_clk_prev = '0')) then  --data clock rising edge
         case state is
           when ready =>                      --idle state
             if (ena = '1') then              --transaction requested
@@ -199,7 +199,7 @@ begin
             busy <= '0';                     --unflag busy
             state <= ready;                  --go to idle state
         end case;
-      elsif (data_clk = '0' and data_clk_prev = '1') then  --data clock falling edge
+      elsif ((data_clk = '0') and (data_clk_prev = '1')) then  --data clock falling edge
         case state is
           when start =>
             if (scl_ena = '0') then                 --starting new transaction
@@ -207,13 +207,13 @@ begin
               ack_error <= '0';                     --reset acknowledge error output
             end if;
           when slv_ack1 =>                          --receiving slave acknowledge (command)
-            if (sda /= '0' or ack_error = '1') then --no-acknowledge or previous no-acknowledge
+            if ((sda /= '0') or (ack_error = '1')) then --no-acknowledge or previous no-acknowledge
               ack_error <= '1';                     --set error output if no-acknowledge
             end if;
           when rd =>                                --receiving slave data
             data_rx(bit_cnt) <= sda;                --receive current slave data bit
           when slv_ack2 =>                          --receiving slave acknowledge (write)
-            if (sda /= '0' or ack_error = '1') then --no-acknowledge or previous no-acknowledge
+            if ((sda /= '0') or (ack_error = '1')) then --no-acknowledge or previous no-acknowledge
               ack_error <= '1';                     --set error output if no-acknowledge
             end if;
           when stop =>
@@ -232,7 +232,7 @@ begin
                  sda_int when others;          --set to internal sda signal
 
   --set scl and sda outputs
-  scl <= '0' when (scl_ena = '1' and scl_clk = '0') else 'Z';
+  scl <= '0' when ((scl_ena = '1') and (scl_clk = '0')) else 'Z';
   sda <= '0' when sda_ena_n = '0' else 'Z';
 
 end architecture rtl;

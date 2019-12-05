@@ -17,20 +17,21 @@ end entity frequency_controller;
 
 architecture rtl of frequency_controller is
 
+  constant max_cnt : natural := (clk_in_freq / (clk_out_freq * 2)) - 1;
+
+  signal cnt   : natural range 0 to max_cnt;
   signal s_out : std_logic := '0';
 
 begin
 
   process (clk_in)
-    constant max_cnt : natural := (clk_in_freq / (clk_out_freq * 2)) - 1;
-    variable cnt     : natural range 0 to max_cnt := 0;
   begin
     if rising_edge(clk_in) then
       if (cnt = max_cnt) then
         s_out <= not(s_out);
-        cnt := 0;
+        cnt <= 0;
       else
-        cnt := cnt + 1;
+        cnt <= cnt + 1;
       end if;
     end if;
   end process;
