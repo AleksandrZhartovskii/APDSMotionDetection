@@ -97,7 +97,7 @@ architecture rtl of apds_master is
   constant APDS9960_R_GSTATUS    : std_logic_vector(7 downto 0) := "10101111";
   constant APDS9960_R_GFLVL      : std_logic_vector(7 downto 0) := "10101110";
 
-  type machine is (init, ready, read_fifo, read_specs, reg_init, reg_read);
+  type machine is (init, ready, read_fifo, read_specs, reg_init, reg_read, error);
 
   signal state             : machine;
   signal state_prev        : machine;
@@ -109,7 +109,7 @@ architecture rtl of apds_master is
 
 begin
 
-  process (clk, reset_n)
+  process (clk, reset_n, ack_error)
     variable stage_init       : natural range 0 to 18;
     variable stage_read_fifo  : natural range 0 to 5;
     variable stage_read_specs : natural range 0 to 3;
@@ -119,12 +119,14 @@ begin
     if (reset_n = '0') then
       stage_init := 0;
       stage_read_fifo := 0;
+      stage_read_specs := 0;
       stage_reg_init := 0;
       stage_reg_read := 0;
 
       state <= init;
       i2c_busy_prev <= '0';
 
+      i2c_ena <= '0';
       busy <= '1';
 
       gvalid <= '0';
@@ -134,6 +136,9 @@ begin
       data_r <= "00000000";
       data_d <= "00000000";
       data_l <= "00000000";
+    elsif ((ack_error = '1') and (state /= error)) then
+      i2c_ena <= '0';
+      state <= error;
     elsif rising_edge(clk) then
       case state is
         when init =>
@@ -325,6 +330,8 @@ begin
               state <= state_prev;
               stage_reg_read := 0;
           end case;
+        when error =>
+          null;
       end case;
     end if;
   end process;

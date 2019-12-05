@@ -4,8 +4,8 @@ use ieee.std_logic_1164.all;
 entity frequency_controller is
 
   generic (
-    gen_clk_in  : integer := 50_000_000;
-    gen_clk_out : integer := 40_000
+    clk_in_freq  : positive;
+    clk_out_freq : positive
   );
 
   port (
@@ -22,7 +22,7 @@ architecture rtl of frequency_controller is
 begin
 
   process (clk_in)
-    constant max_cnt : natural := (gen_clk_in / (gen_clk_out * 2)) - 1;
+    constant max_cnt : natural := (clk_in_freq / (clk_out_freq * 2)) - 1;
     variable cnt     : natural range 0 to max_cnt := 0;
   begin
     if rising_edge(clk_in) then

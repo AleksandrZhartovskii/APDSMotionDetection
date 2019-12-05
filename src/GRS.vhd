@@ -13,13 +13,15 @@ entity GRS is
     seg_data    : out   std_logic_vector(0 to 6)
   );
 
+  constant BOARD_FREQ   : positive := 50_000_000;
+  constant SYSTEM_FREQ  : positive := 12_500_000;
+  constant I2C_BUS_FREQ : positive := 400_000;
+
   signal ci_clk                 : std_logic;
   signal ci_checked_sw          : std_logic_vector(2 downto 0);
 
   signal rom_addr               : std_logic_vector(5 downto 0);
   signal rom_data               : std_logic_vector(7 downto 0);
-
-  signal indicator_reset_n      : std_logic;
 
   signal i2c_reset_n            : std_logic;
   signal i2c_ena                : std_logic;
@@ -41,7 +43,7 @@ entity GRS is
   signal data_r                 : std_logic_vector(7 downto 0);
   signal data_d                 : std_logic_vector(7 downto 0);
   signal data_l                 : std_logic_vector(7 downto 0);
-  
+
   signal gvalid                 : std_logic;
   signal gflvl                  : std_logic_vector(7 downto 0);
 
@@ -53,6 +55,10 @@ architecture rtl of GRS is
 begin
 
   frequency_controller_inst : entity work.frequency_controller
+  generic map (
+    clk_in_freq   => BOARD_FREQ,
+    clk_out_freq  => SYSTEM_FREQ
+  )
   port map (
     clk_in  => clk,
     clk_out => ci_clk
@@ -68,7 +74,6 @@ begin
   indicator_controller_inst : entity work.indicator_controller
   port map (
     clk       => ci_clk,
-    reset_n   => indicator_reset_n,
     digit     => gest_dt,
     seg_data  => seg_data
   );
@@ -81,6 +86,10 @@ begin
   );
 
   i2c_controller_inst : entity work.i2c_controller
+  generic map (
+    input_clk_freq  => BOARD_FREQ,
+    bus_clk_freq    => I2C_BUS_FREQ
+  )
   port map (
     clk       => clk,
     reset_n   => i2c_reset_n,
@@ -122,6 +131,9 @@ begin
   );
 
   main_block_inst : entity work.main_block
+  generic map (
+    clk_freq => SYSTEM_FREQ
+  )
   port map (
     clk           => ci_clk,
     checked_sw    => ci_checked_sw,

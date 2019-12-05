@@ -6,9 +6,7 @@ entity indicator_controller is
   port (
     clk       : in  std_logic;
 
-    reset_n   : in  std_logic;
     digit     : in  std_logic_vector(3 downto 0);
-
     seg_data  : out std_logic_vector(0 to 6)
   );
 

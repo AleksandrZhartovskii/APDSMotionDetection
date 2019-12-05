@@ -5,8 +5,8 @@ use ieee.std_logic_unsigned.all;
 entity i2c_controller is
 
   generic (
-    input_clk : integer := 50_000_000; --input clock speed from user logic in Hz
-    bus_clk   : integer := 400_000     --speed the i2c bus (scl) will run at in Hz
+    input_clk_freq : positive;               --input clock speed from user logic in Hz
+    bus_clk_freq   : positive := 400_000     --speed the i2c bus (scl) will run at in Hz
   );
 
   port (
@@ -31,7 +31,7 @@ end entity i2c_controller;
 
 architecture rtl of i2c_controller is
 
-  constant divider : integer := (input_clk / bus_clk) / 4; --number of clocks in 1/4 cycle of scl
+  constant divider : integer := (input_clk_freq / bus_clk_freq) / 4; --number of clocks in 1/4 cycle of scl
 
   type machine is (ready, start, command, slv_ack1, wr, rd, slv_ack2, mstr_ack, stop); --needed states
 
