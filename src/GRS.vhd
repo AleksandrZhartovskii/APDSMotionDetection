@@ -51,6 +51,7 @@ entity GRS is
   signal gvalid                 : std_logic;
   signal gflvl                  : std_logic_vector(7 downto 0);
 
+  signal ind_mode               : std_logic;
   signal gest_dt                : std_logic_vector(3 downto 0);
 
 end entity GRS;
@@ -81,8 +82,9 @@ begin
       port map (
         clk       => ci_clk,
         ena       => '1',
-        digit     => gest_dt,
-        seg_data  => seg_data(0 to 6)
+        mode      => ind_mode,
+        gest_dt   => gest_dt,
+        seg_data  => seg_data((i * 7) to ((i + 1) * 7 - 1))
       );
     end generate gen_used;
 
@@ -91,7 +93,8 @@ begin
       port map (
         clk       => ci_clk,
         ena       => '0',
-        digit     => gest_dt,
+        mode      => ind_mode,
+        gest_dt   => gest_dt,
         seg_data  => seg_data((i * 7) to ((i + 1) * 7 - 1))
       );
     end generate gen_unused;
@@ -167,6 +170,7 @@ begin
     m_reset_n     => apds_master_reset_n,
     m_ena         => apds_master_ena,
     m_op          => apds_master_op,
+    ind_mode      => ind_mode,
     gest_dt       => gest_dt
   );
 

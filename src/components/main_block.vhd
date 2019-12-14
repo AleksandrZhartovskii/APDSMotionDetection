@@ -28,6 +28,7 @@ entity main_block is
     m_ena       : out std_logic;
     m_op        : out std_logic;
 
+    ind_mode    : out std_logic;
     gest_dt     : out std_logic_vector(3 downto 0)
   );
 
@@ -35,7 +36,7 @@ end entity main_block;
 
 architecture rtl of main_block is
 
-  --TODO: add switches (1) and (0) handlers
+  --TODO: add switches (0) handler
 
   subtype u_byte is natural range 0 to 255;
   subtype short is integer range -32_768 to 32_767;
@@ -438,6 +439,8 @@ begin
   end process;
 
   reset_n <= not(checked_sw(2));
+
   m_reset_n <= reset_n;
+  ind_mode <= checked_sw(1);
 
 end architecture rtl;
