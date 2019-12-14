@@ -97,7 +97,16 @@ architecture rtl of apds_master is
   constant APDS9960_R_GSTATUS    : std_logic_vector(7 downto 0) := "10101111";
   constant APDS9960_R_GFLVL      : std_logic_vector(7 downto 0) := "10101110";
 
-  type machine is (init, ready, read_fifo, read_specs, reg_init, reg_read, error);
+  type machine is (
+    uninitialized,
+    init,
+    ready,
+    read_fifo,
+    read_specs,
+    reg_init,
+    reg_read,
+    error
+  );
 
   signal state             : machine;
   signal state_prev        : machine;
@@ -123,7 +132,7 @@ begin
       stage_reg_init := 0;
       stage_reg_read := 0;
 
-      state <= init;
+      state <= uninitialized;
       i2c_busy_prev <= '0';
 
       i2c_ena <= '0';
@@ -141,77 +150,78 @@ begin
       state <= error;
     elsif rising_edge(clk) then
       case state is
-        when init =>
+        when uninitialized =>
           if (ena = '1') then
             busy <= '1';
+            state <= init;
+          end if;
+        when init =>
+          case stage_init is
+            when 0 =>
+              reg_apds9960_addr <= APDS9960_R_WTIME;
+              reg_data_rom_addr <= RA_APDS9960_WTIME;
+            when 1 =>
+              reg_apds9960_addr <= APDS9960_R_PPULSE;
+              reg_data_rom_addr <= RA_APDS9960_PPULSE;
+            when 2 =>
+              reg_apds9960_addr <= APDS9960_R_CONTROL;
+              reg_data_rom_addr <= RA_APDS9960_CONTROL;
+            when 3 =>
+              reg_apds9960_addr <= APDS9960_R_CONFIG1;
+              reg_data_rom_addr <= RA_APDS9960_CONFIG1;
+            when 4 =>
+              reg_apds9960_addr <= APDS9960_R_CONFIG2;
+              reg_data_rom_addr <= RA_APDS9960_CONFIG2;
+            when 5 =>
+              reg_apds9960_addr <= APDS9960_R_CONFIG3;
+              reg_data_rom_addr <= RA_APDS9960_CONFIG3;
+            when 6 =>
+              reg_apds9960_addr <= APDS9960_R_GPENTH;
+              reg_data_rom_addr <= RA_APDS9960_GPENTH;
+            when 7 =>
+              reg_apds9960_addr <= APDS9960_R_GEXTH;
+              reg_data_rom_addr <= RA_APDS9960_GEXTH;
+            when 8 =>
+              reg_apds9960_addr <= APDS9960_R_GOFFSET_U;
+              reg_data_rom_addr <= RA_APDS9960_GOFFSET_U;
+            when 9 =>
+              reg_apds9960_addr <= APDS9960_R_GOFFSET_D;
+              reg_data_rom_addr <= RA_APDS9960_GOFFSET_D;
+            when 10 =>
+              reg_apds9960_addr <= APDS9960_R_GOFFSET_L;
+              reg_data_rom_addr <= RA_APDS9960_GOFFSET_L;
+            when 11 =>
+              reg_apds9960_addr <= APDS9960_R_GOFFSET_R;
+              reg_data_rom_addr <= RA_APDS9960_GOFFSET_R;
+            when 12 =>
+              reg_apds9960_addr <= APDS9960_R_GPULSE;
+              reg_data_rom_addr <= RA_APDS9960_GPULSE;
+            when 13 =>
+              reg_apds9960_addr <= APDS9960_R_GCONFIG1;
+              reg_data_rom_addr <= RA_APDS9960_GCONFIG1;
+            when 14 =>
+              reg_apds9960_addr <= APDS9960_R_GCONFIG2;
+              reg_data_rom_addr <= RA_APDS9960_GCONFIG2;
+            when 15 =>
+              reg_apds9960_addr <= APDS9960_R_GCONFIG3;
+              reg_data_rom_addr <= RA_APDS9960_GCONFIG3;
+            when 16 =>
+              reg_apds9960_addr <= APDS9960_R_GCONFIG4;
+              reg_data_rom_addr <= RA_APDS9960_GCONFIG4;
+            when 17 =>
+              reg_apds9960_addr <= APDS9960_R_EN;
+              reg_data_rom_addr <= RA_APDS9960_EN;
+            when others =>
+              null;
+          end case;
 
-            case stage_init is
-              when 0 =>
-                reg_apds9960_addr <= APDS9960_R_WTIME;
-                reg_data_rom_addr <= RA_APDS9960_WTIME;
-              when 1 =>
-                reg_apds9960_addr <= APDS9960_R_PPULSE;
-                reg_data_rom_addr <= RA_APDS9960_PPULSE;
-              when 2 =>
-                reg_apds9960_addr <= APDS9960_R_CONTROL;
-                reg_data_rom_addr <= RA_APDS9960_CONTROL;
-              when 3 =>
-                reg_apds9960_addr <= APDS9960_R_CONFIG1;
-                reg_data_rom_addr <= RA_APDS9960_CONFIG1;
-              when 4 =>
-                reg_apds9960_addr <= APDS9960_R_CONFIG2;
-                reg_data_rom_addr <= RA_APDS9960_CONFIG2;
-              when 5 =>
-                reg_apds9960_addr <= APDS9960_R_CONFIG3;
-                reg_data_rom_addr <= RA_APDS9960_CONFIG3;
-              when 6 =>
-                reg_apds9960_addr <= APDS9960_R_GPENTH;
-                reg_data_rom_addr <= RA_APDS9960_GPENTH;
-              when 7 =>
-                reg_apds9960_addr <= APDS9960_R_GEXTH;
-                reg_data_rom_addr <= RA_APDS9960_GEXTH;
-              when 8 =>
-                reg_apds9960_addr <= APDS9960_R_GOFFSET_U;
-                reg_data_rom_addr <= RA_APDS9960_GOFFSET_U;
-              when 9 =>
-                reg_apds9960_addr <= APDS9960_R_GOFFSET_D;
-                reg_data_rom_addr <= RA_APDS9960_GOFFSET_D;
-              when 10 =>
-                reg_apds9960_addr <= APDS9960_R_GOFFSET_L;
-                reg_data_rom_addr <= RA_APDS9960_GOFFSET_L;
-              when 11 =>
-                reg_apds9960_addr <= APDS9960_R_GOFFSET_R;
-                reg_data_rom_addr <= RA_APDS9960_GOFFSET_R;
-              when 12 =>
-                reg_apds9960_addr <= APDS9960_R_GPULSE;
-                reg_data_rom_addr <= RA_APDS9960_GPULSE;
-              when 13 =>
-                reg_apds9960_addr <= APDS9960_R_GCONFIG1;
-                reg_data_rom_addr <= RA_APDS9960_GCONFIG1;
-              when 14 =>
-                reg_apds9960_addr <= APDS9960_R_GCONFIG2;
-                reg_data_rom_addr <= RA_APDS9960_GCONFIG2;
-              when 15 =>
-                reg_apds9960_addr <= APDS9960_R_GCONFIG3;
-                reg_data_rom_addr <= RA_APDS9960_GCONFIG3;
-              when 16 =>
-                reg_apds9960_addr <= APDS9960_R_GCONFIG4;
-                reg_data_rom_addr <= RA_APDS9960_GCONFIG4;
-              when 17 =>
-                reg_apds9960_addr <= APDS9960_R_EN;
-                reg_data_rom_addr <= RA_APDS9960_EN;
-              when others =>
-                null;
-            end case;
-
-            if (stage_init <= 17) then
-              state <= reg_init;
-              stage_init := stage_init + 1;
-            else
-              busy <= '0';
-              state <= ready;
-              stage_init := 0;
-            end if;
+          if (stage_init <= 17) then
+            state <= reg_init;
+            stage_init := stage_init + 1;
+          else
+            busy <= '0';
+            state <= ready;
+            stage_init := 0;
           end if;
         when ready =>
           if (ena = '1') then
