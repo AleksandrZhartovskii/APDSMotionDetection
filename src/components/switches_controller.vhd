@@ -15,6 +15,6 @@ end entity switches_controller;
 architecture rtl of switches_controller is
 begin
 
-
+  checked_sw_out <= checked_sw_in;
 
 end architecture rtl;
