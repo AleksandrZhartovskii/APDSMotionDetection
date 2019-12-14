@@ -14,8 +14,8 @@ entity GRS is
   );
 
   constant BOARD_FREQ   : positive := 50_000_000;
-  constant SYSTEM_FREQ  : positive := 12_500_000;
-  constant I2C_BUS_FREQ : positive := 400_000;
+  constant SYSTEM_FREQ  : positive := 6_250_000;
+  constant I2C_BUS_FREQ : positive := 100_000;
 
   signal ci_clk                 : std_logic;
   signal ci_checked_sw          : std_logic_vector(2 downto 0);

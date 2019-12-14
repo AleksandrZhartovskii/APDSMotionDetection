@@ -54,7 +54,7 @@ architecture rtl of main_block is
   constant GEST_DT_ACK_ERROR      : std_logic_vector(3 downto 0) := "0111";
   constant GEST_DT_UNDEFINED      : std_logic_vector(3 downto 0) := "UUUU";
 
-  constant FIFO_DELAY_TIME        : short := 300;
+  constant FIFO_DELAY_TIME        : short := 30;
   constant FIFO_DELAY_TICKS       : natural := (clk_freq / 1000) * FIFO_DELAY_TIME;
 
   type u_byte_array is array (natural range <>) of u_byte;
