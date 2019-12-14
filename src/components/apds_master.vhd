@@ -116,21 +116,22 @@ architecture rtl of apds_master is
   signal reg_apds9960_addr : std_logic_vector(7 downto 0);
   signal reg_data_rom_addr : std_logic_vector(5 downto 0);
 
+  signal stage_init        : natural range 0 to 18;
+  signal stage_read_fifo   : natural range 0 to 5;
+  signal stage_read_specs  : natural range 0 to 3;
+  signal stage_reg_init    : natural range 0 to 3;
+  signal stage_reg_read    : natural range 0 to 3;
+
 begin
 
   process (clk, reset_n, ack_error)
-    variable stage_init       : natural range 0 to 18;
-    variable stage_read_fifo  : natural range 0 to 5;
-    variable stage_read_specs : natural range 0 to 3;
-    variable stage_reg_init   : natural range 0 to 3;
-    variable stage_reg_read   : natural range 0 to 3;
   begin
     if (reset_n = '0') then
-      stage_init := 0;
-      stage_read_fifo := 0;
-      stage_read_specs := 0;
-      stage_reg_init := 0;
-      stage_reg_read := 0;
+      stage_init <= 0;
+      stage_read_fifo <= 0;
+      stage_read_specs <= 0;
+      stage_reg_init <= 0;
+      stage_reg_read <= 0;
 
       state <= uninitialized;
       i2c_busy_prev <= '0';
@@ -217,11 +218,11 @@ begin
 
           if (stage_init <= 17) then
             state <= reg_init;
-            stage_init := stage_init + 1;
+            stage_init <= stage_init + 1;
           else
             busy <= '0';
             state <= ready;
-            stage_init := 0;
+            stage_init <= 0;
           end if;
         when ready =>
           if (ena = '1') then
@@ -247,20 +248,20 @@ begin
               gflvl <= i2c_data_rd;
             when others =>
               null;
-
-            if (stage_read_specs <= 2) then
-              stage_read_specs := stage_read_specs + 1;
-
-              if (stage_read_specs <= 1) then
-                state <= reg_read;
-                state_prev <= read_specs;
-              end if;
-            else
-              busy <= '0';
-              state <= ready;
-              stage_read_specs := 0;
-            end if;
           end case;
+
+          if (stage_read_specs <= 2) then
+            if (stage_read_specs <= 1) then
+              state <= reg_read;
+              state_prev <= read_specs;
+            end if;
+
+            stage_read_specs <= stage_read_specs + 1;
+          else
+            busy <= '0';
+            state <= ready;
+            stage_read_specs <= 0;
+          end if;
         when read_fifo =>
           case stage_read_fifo is
             when 0 =>
@@ -281,16 +282,16 @@ begin
           end case;
 
           if (stage_read_fifo <= 4) then
-            stage_read_fifo := stage_read_fifo + 1;
-
             if (stage_read_fifo <= 3) then
               state <= reg_read;
               state_prev <= read_fifo;
             end if;
+
+            stage_read_fifo <= stage_read_fifo + 1;
           else
             busy <= '0';
             state <= ready;
-            stage_read_fifo := 0;
+            stage_read_fifo <= 0;
           end if;
         when reg_init =>
           i2c_rw <= '0';
@@ -300,7 +301,7 @@ begin
             (i2c_busy_prev = '0' and i2c_busy = '1') or
             (i2c_busy = '0' and stage_reg_init = 2)
           ) then
-            stage_reg_init := stage_reg_init + 1;
+            stage_reg_init <= stage_reg_init + 1;
           end if;
 
           case stage_reg_init is
@@ -315,7 +316,7 @@ begin
               i2c_ena <= '0';
             when 3 =>
               state <= init;
-              stage_reg_init := 0;
+              stage_reg_init <= 0;
           end case;
         when reg_read =>
           i2c_rw <= '0';
@@ -325,7 +326,7 @@ begin
             (i2c_busy_prev = '0' and i2c_busy = '1') or
             (i2c_busy = '0' and stage_reg_read = 2)
           ) then
-            stage_reg_read := stage_reg_read + 1;
+            stage_reg_read <= stage_reg_read + 1;
           end if;
 
           case stage_reg_read is
@@ -338,7 +339,7 @@ begin
               i2c_ena <= '0';
             when 3 =>
               state <= state_prev;
-              stage_reg_read := 0;
+              stage_reg_read <= 0;
           end case;
         when error =>
           null;

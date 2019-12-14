@@ -132,7 +132,7 @@ begin
 
   process (clk, reset_n, m_ack_error)
   begin
-    if (reset_n = '1') then
+    if (reset_n = '0') then
       m_ena <= '0';
       m_op <= '0';
 
