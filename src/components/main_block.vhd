@@ -136,6 +136,7 @@ begin
 
       idx <= 0;
       delay_cnt <= 1;
+      m_busy_prev <= '0';
 
       acc_ud_delta <= 0;
       acc_lr_delta <= 0;
