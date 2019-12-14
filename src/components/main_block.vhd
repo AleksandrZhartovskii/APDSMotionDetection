@@ -80,8 +80,6 @@ architecture rtl of main_block is
     error
   );
 
-  type nf_state_t is (none, near, far);
-
   signal state          : machine;
   signal state_prev     : machine;
 
@@ -121,12 +119,12 @@ architecture rtl of main_block is
   signal acc_ud_delta   : short := 0;
   signal acc_lr_delta   : short := 0;
 
-  signal gest_ud_count  : integer range -1 to 1;
-  signal gest_lr_count  : integer range -1 to 1;
   signal gest_n_count   : u_byte;
   signal gest_f_count   : u_byte;
 
-  signal gest_nf_state  : nf_state_t;
+  signal gest_ud_state  : integer range -1 to 1;
+  signal gest_lr_state  : integer range -1 to 1;
+  signal gest_nf_state  : integer range -1 to 1;
 
 begin
 
@@ -145,7 +143,9 @@ begin
       gest_n_count <= 0;
       gest_f_count <= 0;
 
-      gest_nf_state <= none;
+      gest_ud_state <= 0;
+      gest_lr_state <= 0;
+      gest_nf_state <= 0;
 
       state <= init;
     elsif (m_ack_error = '1') then
@@ -265,7 +265,7 @@ begin
             l_last <= data_l_arr(idx);
 
             idx <= 0;
-            state <= accumulate_deltas;
+            state <= calculate_ratios;
           else
             idx <= idx - 1;
           end if;
@@ -288,19 +288,15 @@ begin
           state <= calculate_urdl_gesture_values;
         when calculate_urdl_gesture_values =>
           if (acc_ud_delta >= GESTURE_SENSITIVITY_1) then
-            gest_ud_count <= 1;
+            gest_ud_state <= 1;
           elsif (acc_ud_delta <= -GESTURE_SENSITIVITY_1) then
-            gest_ud_count <= -1;
-          else
-            gest_ud_count <= 0;
+            gest_ud_state <= -1;
           end if;
 
           if (acc_lr_delta >= GESTURE_SENSITIVITY_1) then
-            gest_lr_count <= 1;
+            gest_lr_state <= 1;
           elsif (acc_lr_delta <= -GESTURE_SENSITIVITY_1) then
-            gest_lr_count <= -1;
-          else
-            gest_lr_count <= 0;
+            gest_lr_state <= -1;
           end if;
 
           state <= calculate_nf_gesture_values;
@@ -309,10 +305,10 @@ begin
             (abs(ud_delta) < GESTURE_SENSITIVITY_2) and
             (abs(lr_delta) < GESTURE_SENSITIVITY_2)
           ) then
-            if ((gest_ud_count = 0) and (gest_lr_count = 0)) then
+            if ((gest_ud_state = 0) and (gest_lr_state = 0)) then
               if ((ud_delta = 0) and (lr_delta = 0)) then
                 gest_n_count <= gest_n_count + 1;
-              elsif ((ud_delta /= 0) and (lr_delta /= 0)) then
+              elsif ((ud_delta /= 0) or (lr_delta /= 0)) then
                 gest_f_count <= gest_f_count + 1;
               end if;
 
@@ -331,9 +327,9 @@ begin
         when catch_nf_state =>
           if ((gest_n_count >= 10) and (gest_f_count >= 2)) then
             if ((ud_delta = 0) and (lr_delta = 0)) then
-              gest_nf_state <= near;
+              gest_nf_state <= -1;
             elsif ((ud_delta /= 0) and (lr_delta /= 0)) then
-              gest_nf_state <= far;
+              gest_nf_state <= 1;
             end if;
           end if;
 
@@ -341,10 +337,11 @@ begin
           is_delay <= '1';
         when correct_nf_state_values =>
           if (gest_n_count >= 10) then
-            gest_ud_count <= 0;
-            gest_lr_count <= 0;
             acc_ud_delta <= 0;
             acc_lr_delta <= 0;
+
+            gest_ud_state <= 0;
+            gest_lr_state <= 0;
           end if;
 
           state <= process_read_end;
@@ -373,39 +370,37 @@ begin
             end if;
           end if;
         when decode_gesture =>
-          if (gest_nf_state = near) then
+          if (gest_nf_state = -1) then
             gest_dt <= GEST_DT_NEAR;
-          elsif (gest_nf_state = far) then
+          elsif (gest_nf_state = 1) then
             gest_dt <= GEST_DT_FAR;
-          end if;
-
-          if ((gest_ud_count = -1) and (gest_lr_count = 0)) then
+          elsif ((gest_ud_state = -1) and (gest_lr_state = 0)) then
             gest_dt <= GEST_DT_UP;
-          elsif ((gest_ud_count = 1) and (gest_lr_count = 0)) then
+          elsif ((gest_ud_state = 1) and (gest_lr_state = 0)) then
             gest_dt <= GEST_DT_DOWN;
-          elsif ((gest_ud_count = 0) and (gest_lr_count = 1)) then
+          elsif ((gest_ud_state = 0) and (gest_lr_state = 1)) then
             gest_dt <= GEST_DT_RIGHT;
-          elsif ((gest_ud_count = 0) and (gest_lr_count = -1)) then
+          elsif ((gest_ud_state = 0) and (gest_lr_state = -1)) then
             gest_dt <= GEST_DT_LEFT;
-          elsif ((gest_ud_count = -1) and (gest_lr_count = 1)) then
+          elsif ((gest_ud_state = -1) and (gest_lr_state = 1)) then
             if (abs(acc_ud_delta) > abs(acc_lr_delta)) then
               gest_dt <= GEST_DT_UP;
             else
               gest_dt <= GEST_DT_RIGHT;
             end if;
-          elsif ((gest_ud_count = 1) and (gest_lr_count = -1)) then
+          elsif ((gest_ud_state = 1) and (gest_lr_state = -1)) then
             if (abs(acc_ud_delta) > abs(acc_lr_delta)) then
               gest_dt <= GEST_DT_DOWN;
             else
               gest_dt <= GEST_DT_LEFT;
             end if;
-          elsif ((gest_ud_count = -1) and (gest_lr_count = -1)) then
+          elsif ((gest_ud_state = -1) and (gest_lr_state = -1)) then
             if (abs(acc_ud_delta) > abs(acc_lr_delta)) then
               gest_dt <= GEST_DT_UP;
             else
               gest_dt <= GEST_DT_LEFT;
             end if;
-          elsif ((gest_ud_count = 1) and (gest_lr_count = 1)) then
+          elsif ((gest_ud_state = 1) and (gest_lr_state = 1)) then
             if (abs(acc_ud_delta) > abs(acc_lr_delta)) then
               gest_dt <= GEST_DT_DOWN;
             else
@@ -423,7 +418,9 @@ begin
           gest_n_count <= 0;
           gest_f_count <= 0;
 
-          gest_nf_state <= none;
+          gest_ud_state <= 0;
+          gest_lr_state <= 0;
+          gest_nf_state <= 0;
 
           state <= polling;
           is_delay <= '1';
