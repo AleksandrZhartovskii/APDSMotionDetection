@@ -51,8 +51,8 @@ architecture rtl of main_block is
   constant GEST_DT_NEAR           : std_logic_vector(3 downto 0) := "0101";
   constant GEST_DT_FAR            : std_logic_vector(3 downto 0) := "0110";
 
-  constant GEST_DT_ACK_ERROR      : std_logic_vector(3 downto 0) := "0111";
   constant GEST_DT_UNDEFINED      : std_logic_vector(3 downto 0) := "UUUU";
+  constant GEST_DT_ERROR          : std_logic_vector(3 downto 0) := "0111";
 
   constant FIFO_DELAY_TIME        : short := 30;
   constant FIFO_DELAY_TICKS       : natural := (clk_freq / 1000) * FIFO_DELAY_TIME;
@@ -60,7 +60,7 @@ architecture rtl of main_block is
   type u_byte_array is array (natural range <>) of u_byte;
   type machine is (
     init,
-    polling,
+    poll,
     read_data,
     process_data_size,
     find_first_appropriate_set,
@@ -75,7 +75,7 @@ architecture rtl of main_block is
     correct_nf_state_values,
     process_read_end,
     decode_gesture,
-    reset_accumulators,
+    reset_vars,
     delay,
     error
   );
@@ -126,6 +126,19 @@ architecture rtl of main_block is
   signal gest_lr_state  : integer range -1 to 1;
   signal gest_nf_state  : integer range -1 to 1;
 
+  procedure reset_gest_vars is
+  begin
+    acc_ud_delta <= 0;
+    acc_lr_delta <= 0;
+
+    gest_n_count <= 0;
+    gest_f_count <= 0;
+
+    gest_ud_state <= 0;
+    gest_lr_state <= 0;
+    gest_nf_state <= 0;
+  end procedure;
+
 begin
 
   process (clk, reset_n, m_ack_error)
@@ -138,15 +151,7 @@ begin
       delay_cnt <= 1;
       m_busy_prev <= '0';
 
-      acc_ud_delta <= 0;
-      acc_lr_delta <= 0;
-
-      gest_n_count <= 0;
-      gest_f_count <= 0;
-
-      gest_ud_state <= 0;
-      gest_lr_state <= 0;
-      gest_nf_state <= 0;
+      reset_gest_vars;
 
       state <= init;
     elsif (m_ack_error = '1') then
@@ -164,14 +169,14 @@ begin
             m_ena <= '0';
 
             if (m_busy = '0') then
-              state <= polling;
+              state <= poll;
               is_delay <= '1';
             end if;
           end if;
-        when polling =>
+        when poll =>
           if (is_delay = '1') then
             state <= delay;
-            state_prev <= polling;
+            state_prev <= poll;
           else
             m_op <= '0';
             m_ena <= '1';
@@ -411,19 +416,11 @@ begin
             gest_dt <= GEST_DT_UNDEFINED;
           end if;
 
-          state <= reset_accumulators;
-        when reset_accumulators =>
-          acc_ud_delta <= 0;
-          acc_lr_delta <= 0;
+          state <= reset_vars;
+        when reset_vars =>
+          reset_gest_vars;
 
-          gest_n_count <= 0;
-          gest_f_count <= 0;
-
-          gest_ud_state <= 0;
-          gest_lr_state <= 0;
-          gest_nf_state <= 0;
-
-          state <= polling;
+          state <= poll;
           is_delay <= '1';
         when delay =>
           if (delay_cnt = FIFO_DELAY_TICKS) then
@@ -435,7 +432,7 @@ begin
             delay_cnt <= delay_cnt + 1;
           end if;
         when error =>
-          gest_dt <= GEST_DT_ACK_ERROR;
+          gest_dt <= GEST_DT_ERROR;
       end case;
     end if;
   end process;
