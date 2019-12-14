@@ -3,6 +3,10 @@ use ieee.std_logic_1164.all;
 
 entity GRS is
 
+  generic (
+    INDS_COUNT : natural := 8
+  );
+
   port (
     clk         : in    std_logic;
     checked_sw  : in    std_logic_vector(2 downto 0);
@@ -10,7 +14,7 @@ entity GRS is
     sda         : inout std_logic;
     scl         : inout std_logic;
 
-    seg_data    : out   std_logic_vector(0 to 6)
+    seg_data    : out   std_logic_vector(0 to (7 * INDS_COUNT - 1))
   );
 
   constant BOARD_FREQ   : positive := 50_000_000;
@@ -71,12 +75,27 @@ begin
     checked_sw_out => ci_checked_sw
   );
 
-  indicator_controller_inst : entity work.indicator_controller
-  port map (
-    clk       => ci_clk,
-    digit     => gest_dt,
-    seg_data  => seg_data
-  );
+  gen_indicator_controllers : for i in 0 to (INDS_COUNT - 1) generate
+    gen_used : if (i = 0) generate
+      ic_inst : entity work.indicator_controller
+      port map (
+        clk       => ci_clk,
+        ena       => '1',
+        digit     => gest_dt,
+        seg_data  => seg_data(0 to 6)
+      );
+    end generate gen_used;
+
+    gen_unused : if (i > 0) generate
+      ic_inst : entity work.indicator_controller
+      port map (
+        clk       => ci_clk,
+        ena       => '0',
+        digit     => gest_dt,
+        seg_data  => seg_data((i * 7) to ((i + 1) * 7 - 1))
+      );
+    end generate gen_unused;
+  end generate gen_indicator_controllers;
 
   constant_rom_inst : entity work.constant_rom
   port map (
