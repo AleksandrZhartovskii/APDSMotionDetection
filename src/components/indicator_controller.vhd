@@ -29,8 +29,7 @@ begin
         when "0111" => seg_data <= "0001111"; --7
         when "1000" => seg_data <= "0000000"; --8
         when "1001" => seg_data <= "0000100"; --9
-        when "UUUU" => seg_data <= "1111110"; --'-'
-        when others => seg_data <= "0110110"; --unknown signal, 3 horizontal segments
+        when others => seg_data <= "1111110"; --'-'
       end case;
     end if;
   end process;

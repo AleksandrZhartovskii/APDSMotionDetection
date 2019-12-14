@@ -51,7 +51,7 @@ architecture rtl of main_block is
   constant GEST_DT_NEAR           : std_logic_vector(3 downto 0) := "0101";
   constant GEST_DT_FAR            : std_logic_vector(3 downto 0) := "0110";
 
-  constant GEST_DT_UNDEFINED      : std_logic_vector(3 downto 0) := "UUUU";
+  constant GEST_DT_UNDEFINED      : std_logic_vector(3 downto 0) := "0000";
   constant GEST_DT_ERROR          : std_logic_vector(3 downto 0) := "0111";
 
   constant FIFO_DELAY_TIME        : short := 30;
