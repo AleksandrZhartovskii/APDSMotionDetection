@@ -45,9 +45,9 @@ architecture rtl of main_block is
   constant GESTURE_SENSITIVITY_2  : u_byte := 20;
 
   constant GEST_DT_UP             : std_logic_vector(3 downto 0) := "0001";
-  constant GEST_DT_RIGHT          : std_logic_vector(3 downto 0) := "0010";
-  constant GEST_DT_DOWN           : std_logic_vector(3 downto 0) := "0011";
-  constant GEST_DT_LEFT           : std_logic_vector(3 downto 0) := "0100";
+  constant GEST_DT_DOWN           : std_logic_vector(3 downto 0) := "0010";
+  constant GEST_DT_LEFT           : std_logic_vector(3 downto 0) := "0011";
+  constant GEST_DT_RIGHT          : std_logic_vector(3 downto 0) := "0100";
   constant GEST_DT_NEAR           : std_logic_vector(3 downto 0) := "0101";
   constant GEST_DT_FAR            : std_logic_vector(3 downto 0) := "0110";
 
